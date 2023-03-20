@@ -88,6 +88,20 @@ public class TestDatabaseFeatures {
 		assumeThat(database).isNotIn(Database.MySql, Database.MariaDb, Database.SqlServer);
 	}
 
+
+	private void supportsWindowingFunctions() {
+		assumeThat(database).isNotEqualTo(Database.Hsql);
+	}
+
+	private void supportsFullOuterJoin() {
+		assumeThat(database).isNotIn(Database.H2, Database.MySql, Database.MariaDb);
+	}
+
+	private void supportsSingleSelectQuery() {
+		supportsWindowingFunctions();
+		supportsFullOuterJoin();
+	}
+
 	public void databaseIs(Database database) {
 		assumeThat(this.database).isEqualTo(database);
 	}
@@ -120,9 +134,10 @@ public class TestDatabaseFeatures {
 		SUPPORTS_ARRAYS(TestDatabaseFeatures::supportsArrays), //
 		SUPPORTS_GENERATED_IDS_IN_REFERENCED_ENTITIES(TestDatabaseFeatures::supportsGeneratedIdsInReferencedEntities), //
 		SUPPORTS_NANOSECOND_PRECISION(TestDatabaseFeatures::supportsNanosecondPrecision), //
-		SUPPORTS_NULL_PRECEDENCE(TestDatabaseFeatures::supportsNullPrecedence),
+		SUPPORTS_NULL_PRECEDENCE(TestDatabaseFeatures::supportsNullPrecedence), //
 		IS_POSTGRES(f -> f.databaseIs(Database.PostgreSql)), //
-		IS_HSQL(f -> f.databaseIs(Database.Hsql));
+		IS_HSQL(f -> f.databaseIs(Database.Hsql)), //
+		SUPPORTS_SINGLE_SELECT_QUERY(f -> f.supportsWindowingFunctions());
 
 		private final Consumer<TestDatabaseFeatures> featureMethod;
 
@@ -134,4 +149,5 @@ public class TestDatabaseFeatures {
 			featureMethod.accept(features);
 		}
 	}
+
 }
