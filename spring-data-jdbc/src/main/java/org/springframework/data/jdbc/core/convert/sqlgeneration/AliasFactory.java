@@ -57,7 +57,7 @@ public class AliasFactory {
 			})
 	);
 
-	String getAliasFor(Object key) {
+	public String getAliasFor(Object key) {
 
 		String cachedAlias = cache.get(key);
 		if (cachedAlias != null) {

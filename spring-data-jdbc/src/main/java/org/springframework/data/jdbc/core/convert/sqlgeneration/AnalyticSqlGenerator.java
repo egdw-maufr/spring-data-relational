@@ -18,6 +18,7 @@ package org.springframework.data.jdbc.core.convert.sqlgeneration;
 
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.relational.core.dialect.AnsiDialect;
+import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.data.relational.core.dialect.RenderContextFactory;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.sql.Select;
@@ -26,17 +27,17 @@ import org.springframework.data.relational.core.sql.render.SqlRenderer;
 
 public class AnalyticSqlGenerator {
 
-	private final AnsiDialect dialect;
+	private final Dialect dialect;
 
 	private final AggregateToStructure aggregateToStructure;
 	private final StructureToSelect structureToSelect;
 
-	public AnalyticSqlGenerator(AnsiDialect dialect, JdbcMappingContext context) {
+	public AnalyticSqlGenerator(Dialect dialect, JdbcMappingContext context) {
 
 		this(dialect, new AggregateToStructure(context), new StructureToSelect());
 	}
 
-	AnalyticSqlGenerator(AnsiDialect dialect, AggregateToStructure aggregateToStructure,
+	public AnalyticSqlGenerator(Dialect dialect, AggregateToStructure aggregateToStructure,
 			StructureToSelect structureToSelect) {
 
 		this.dialect = dialect;

@@ -25,7 +25,7 @@ import org.springframework.data.relational.core.mapping.PersistentPropertyPathEx
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.sql.*;
 
-class StructureToSelect {
+public class StructureToSelect {
 
 	private final AliasFactory aliasFactory;
 
@@ -33,7 +33,7 @@ class StructureToSelect {
 		this(new AliasFactory());
 	}
 
-	StructureToSelect(AliasFactory aliasFactory) {
+	public StructureToSelect(AliasFactory aliasFactory) {
 		this.aliasFactory = aliasFactory;
 	}
 

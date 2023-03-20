@@ -22,11 +22,11 @@ import org.springframework.data.relational.core.mapping.PersistentPropertyPathEx
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 
-class AggregateToStructure {
+public class AggregateToStructure {
 
 	private final JdbcMappingContext context;
 
-	AggregateToStructure(JdbcMappingContext context) {
+	public AggregateToStructure(JdbcMappingContext context) {
 		this.context = context;
 	}
 
