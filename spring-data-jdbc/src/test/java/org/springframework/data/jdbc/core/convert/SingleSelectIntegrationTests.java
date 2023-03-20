@@ -60,22 +60,19 @@ public class SingleSelectIntegrationTests {
 
 	@Autowired Dialect dialect;
 
-	@Autowired
-	JdbcAggregateTemplate aggregateTemplate;
+	@Autowired JdbcAggregateTemplate aggregateTemplate;
 
-	@Autowired
-	NamedParameterJdbcTemplate jdbcTemplate;
+	@Autowired NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Test
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
 	void simpleEntity() {
 
-
-
-
 		AliasFactory aliasFactory = new AliasFactory();
-		AnalyticSqlGenerator sqlGenerator = new AnalyticSqlGenerator(dialect, new AggregateToStructure(jdbcMappingContext),new StructureToSelect(aliasFactory));
-		RelationalPersistentEntity<DummyEntity> entity = (RelationalPersistentEntity<DummyEntity>) jdbcMappingContext.getRequiredPersistentEntity(DummyEntity.class);
+		AnalyticSqlGenerator sqlGenerator = new AnalyticSqlGenerator(dialect, new AggregateToStructure(jdbcMappingContext),
+				new StructureToSelect(aliasFactory));
+		RelationalPersistentEntity<DummyEntity> entity = (RelationalPersistentEntity<DummyEntity>) jdbcMappingContext
+				.getRequiredPersistentEntity(DummyEntity.class);
 		String sql = sqlGenerator.findAll(entity);
 
 		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
@@ -89,20 +86,51 @@ public class SingleSelectIntegrationTests {
 				throw new UnsupportedOperationException("not supported yet");
 			}
 		};
-		AggregateResultSetExtractor<DummyEntity> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity, converter, pathToColumn);
+		AggregateResultSetExtractor<DummyEntity> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
+				converter, pathToColumn);
 
-		DummyEntity instance = new DummyEntity();
-		instance.name = "Jens";
-		DummyEntity saved = aggregateTemplate.save(instance);
-
+		DummyEntity saved = aggregateTemplate.save(new DummyEntity(null, "Jens"));
 
 		Iterable<DummyEntity> result = jdbcTemplate.query(sql, extractor);
 
-
-
-		assertThat(result).isNotEmpty();
-
+		assertThat(result).containsExactly(saved);
 	}
+
+
+	@Test
+	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
+	void singleCollection() {
+
+		AliasFactory aliasFactory = new AliasFactory();
+		AnalyticSqlGenerator sqlGenerator = new AnalyticSqlGenerator(dialect, new AggregateToStructure(jdbcMappingContext),
+				new StructureToSelect(aliasFactory));
+		RelationalPersistentEntity<SingleReference> entity = (RelationalPersistentEntity<SingleReference>) jdbcMappingContext
+				.getRequiredPersistentEntity(SingleReference.class);
+		String sql = sqlGenerator.findAll(entity);
+
+		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
+			@Override
+			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
+				return aliasFactory.getAliasFor(propertyPath);
+			}
+
+			@Override
+			public String keyColumn(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
+				throw new UnsupportedOperationException("not supported yet");
+			}
+		};
+		AggregateResultSetExtractor<SingleReference> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
+				converter, pathToColumn);
+
+		SingleReference singleReference = new SingleReference(null, new DummyEntity(null, "Jens"));
+		SingleReference saved = aggregateTemplate.save(singleReference);
+
+		Iterable<SingleReference> result = jdbcTemplate.query(sql, extractor);
+
+		assertThat(result).containsExactly(saved);
+	}
+
+
 
 	@Configuration
 	@Import(TestConfiguration.class)
@@ -115,14 +143,17 @@ public class SingleSelectIntegrationTests {
 
 		@Bean
 		JdbcAggregateOperations operations(ApplicationEventPublisher publisher, RelationalMappingContext context,
-										   DataAccessStrategy dataAccessStrategy, JdbcConverter converter) {
+				DataAccessStrategy dataAccessStrategy, JdbcConverter converter) {
 			return new JdbcAggregateTemplate(publisher, context, converter, dataAccessStrategy);
 		}
 	}
 
-	static class DummyEntity {
-		@Id Integer id;
-		String name;
+	record DummyEntity(@Id Integer id, String name) {
 	}
 
+
+	record SingleReference (
+		@Id Integer id,
+		DummyEntity dummy){
+	}
 }
