@@ -68,23 +68,14 @@ public class SingleSelectIntegrationTests {
 	@Test
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
 	void simpleEntity() {
-
-		AliasFactory aliasFactory = new AliasFactory();
-		AnalyticSqlGenerator sqlGenerator = new AnalyticSqlGenerator(dialect, new AggregateToStructure(jdbcMappingContext),
-				new StructureToSelect(aliasFactory));
 		RelationalPersistentEntity<DummyEntity> entity = (RelationalPersistentEntity<DummyEntity>) jdbcMappingContext
 				.getRequiredPersistentEntity(DummyEntity.class);
-		String sql = sqlGenerator.findAll(entity);
 
-		PathToColumnMapping pathToColumn = createPathToColumnMapping(aliasFactory);
-		AggregateResultSetExtractor<DummyEntity> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
-				converter, pathToColumn);
+		AggregateReader<DummyEntity> reader = new AggregateReader<>(jdbcMappingContext, dialect, entity, converter, jdbcTemplate);
 
 		DummyEntity saved = aggregateTemplate.save(new DummyEntity(null, "Jens"));
 
-		Iterable<DummyEntity> result = jdbcTemplate.query(sql, extractor);
-
-		assertThat(result).containsExactly(saved);
+		assertThat(reader.findAll()).containsExactly(saved);
 	}
 
 	private  PathToColumnMapping createPathToColumnMapping(AliasFactory aliasFactory) {
@@ -110,23 +101,14 @@ public class SingleSelectIntegrationTests {
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
 	void singleCollection() {
 
-		AliasFactory aliasFactory = new AliasFactory();
-		AnalyticSqlGenerator sqlGenerator = new AnalyticSqlGenerator(dialect, new AggregateToStructure(jdbcMappingContext),
-				new StructureToSelect(aliasFactory));
 		RelationalPersistentEntity<SingleReference> entity = (RelationalPersistentEntity<SingleReference>) jdbcMappingContext
 				.getRequiredPersistentEntity(SingleReference.class);
-		String sql = sqlGenerator.findAll(entity);
-
-		PathToColumnMapping pathToColumn = createPathToColumnMapping(aliasFactory);
-		AggregateResultSetExtractor<SingleReference> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
-				converter, pathToColumn);
-
+		AggregateReader<SingleReference> reader = new AggregateReader<>(jdbcMappingContext, dialect, entity, converter, jdbcTemplate);
+		
 		SingleReference singleReference = new SingleReference(null, new DummyEntity(null, "Jens"));
 		SingleReference saved = aggregateTemplate.save(singleReference);
 
-		Iterable<SingleReference> result = jdbcTemplate.query(sql, extractor);
-
-		assertThat(result).containsExactly(saved);
+		assertThat(reader.findAll()).containsExactly(saved);
 	}
 
 
