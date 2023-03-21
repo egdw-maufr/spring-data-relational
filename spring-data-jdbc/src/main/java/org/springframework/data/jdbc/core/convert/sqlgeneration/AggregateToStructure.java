@@ -19,14 +19,15 @@ package org.springframework.data.jdbc.core.convert.sqlgeneration;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.relational.core.mapping.PersistentPropertyPathExtension;
+import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 
 public class AggregateToStructure {
 
-	private final JdbcMappingContext context;
+	private final RelationalMappingContext context;
 
-	public AggregateToStructure(JdbcMappingContext context) {
+	public AggregateToStructure(RelationalMappingContext context) {
 		this.context = context;
 	}
 

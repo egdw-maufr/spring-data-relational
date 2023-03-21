@@ -26,20 +26,21 @@ import org.springframework.data.jdbc.core.dialect.JdbcDialect;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.relational.core.dialect.Dialect;
+import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class AggregateReader<T> {
-	private final JdbcMappingContext mappingContext;
+	private final RelationalMappingContext mappingContext;
 	private final RelationalPersistentEntity<T> aggregate;
 	private final AliasFactory aliasFactory = new AliasFactory();
 	private final AnalyticSqlGenerator sqlGenerator;
 	private final JdbcConverter converter;
 	private final NamedParameterJdbcOperations jdbcTemplate;
 
-	AggregateReader(JdbcMappingContext mappingContext, Dialect dialect, RelationalPersistentEntity<T> aggregate, JdbcConverter converter, NamedParameterJdbcOperations jdbcTemplate) {
+	AggregateReader(RelationalMappingContext mappingContext, Dialect dialect, RelationalPersistentEntity<T> aggregate, JdbcConverter converter, NamedParameterJdbcOperations jdbcTemplate) {
 
 		this.mappingContext = mappingContext;
 

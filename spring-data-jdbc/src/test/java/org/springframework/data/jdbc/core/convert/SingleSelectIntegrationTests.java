@@ -104,7 +104,7 @@ public class SingleSelectIntegrationTests {
 		RelationalPersistentEntity<SingleReference> entity = (RelationalPersistentEntity<SingleReference>) jdbcMappingContext
 				.getRequiredPersistentEntity(SingleReference.class);
 		AggregateReader<SingleReference> reader = new AggregateReader<>(jdbcMappingContext, dialect, entity, converter, jdbcTemplate);
-		
+
 		SingleReference singleReference = new SingleReference(null, new DummyEntity(null, "Jens"));
 		SingleReference saved = aggregateTemplate.save(singleReference);
 
