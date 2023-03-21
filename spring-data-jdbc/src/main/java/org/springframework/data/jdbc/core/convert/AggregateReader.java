@@ -22,15 +22,12 @@ import org.springframework.data.jdbc.core.convert.sqlgeneration.AggregateToStruc
 import org.springframework.data.jdbc.core.convert.sqlgeneration.AliasFactory;
 import org.springframework.data.jdbc.core.convert.sqlgeneration.AnalyticSqlGenerator;
 import org.springframework.data.jdbc.core.convert.sqlgeneration.StructureToSelect;
-import org.springframework.data.jdbc.core.dialect.JdbcDialect;
-import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class AggregateReader<T> {
 	private final RelationalMappingContext mappingContext;
@@ -40,7 +37,7 @@ public class AggregateReader<T> {
 	private final JdbcConverter converter;
 	private final NamedParameterJdbcOperations jdbcTemplate;
 
-	AggregateReader(RelationalMappingContext mappingContext, Dialect dialect, RelationalPersistentEntity<T> aggregate, JdbcConverter converter, NamedParameterJdbcOperations jdbcTemplate) {
+	AggregateReader(RelationalMappingContext mappingContext, Dialect dialect, JdbcConverter converter, NamedParameterJdbcOperations jdbcTemplate, RelationalPersistentEntity<T> aggregate) {
 
 		this.mappingContext = mappingContext;
 
@@ -57,8 +54,8 @@ public class AggregateReader<T> {
 		String sql = sqlGenerator.findAll(aggregate);
 
 		PathToColumnMapping pathToColumn = createPathToColumnMapping(aliasFactory);
-		AggregateResultSetExtractor<T> extractor = new AggregateResultSetExtractor<>(
-				mappingContext, aggregate, converter, pathToColumn);
+		AggregateResultSetExtractor<T> extractor = new AggregateResultSetExtractor<>(mappingContext, aggregate, converter,
+				pathToColumn);
 
 		Iterable<T> result = jdbcTemplate.query(sql, extractor);
 

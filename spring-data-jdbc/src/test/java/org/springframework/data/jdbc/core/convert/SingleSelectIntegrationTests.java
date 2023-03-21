@@ -19,7 +19,7 @@ package org.springframework.data.jdbc.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.context.TestExecutionListeners.MergeMode.*;
 
-import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,20 +30,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.jdbc.core.JdbcAggregateOperations;
 import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
-import org.springframework.data.jdbc.core.convert.sqlgeneration.AggregateToStructure;
-import org.springframework.data.jdbc.core.convert.sqlgeneration.AliasFactory;
-import org.springframework.data.jdbc.core.convert.sqlgeneration.AnalyticSqlGenerator;
-import org.springframework.data.jdbc.core.convert.sqlgeneration.StructureToSelect;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.jdbc.testing.AssumeFeatureTestExecutionListener;
 import org.springframework.data.jdbc.testing.EnabledOnFeature;
 import org.springframework.data.jdbc.testing.TestConfiguration;
 import org.springframework.data.jdbc.testing.TestDatabaseFeatures;
-import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.relational.core.dialect.Dialect;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
-import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -65,37 +59,25 @@ public class SingleSelectIntegrationTests {
 
 	@Autowired NamedParameterJdbcTemplate jdbcTemplate;
 
+	AggregateReaderFactory readerFactory;
+
+	@BeforeEach
+	void before() {
+		readerFactory = new AggregateReaderFactory(jdbcMappingContext, dialect, converter, jdbcTemplate);
+	}
+
 	@Test
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
 	void simpleEntity() {
 		RelationalPersistentEntity<DummyEntity> entity = (RelationalPersistentEntity<DummyEntity>) jdbcMappingContext
 				.getRequiredPersistentEntity(DummyEntity.class);
 
-		AggregateReader<DummyEntity> reader = new AggregateReader<>(jdbcMappingContext, dialect, entity, converter, jdbcTemplate);
+		AggregateReader<DummyEntity> reader = readerFactory.createAggregateReaderFor(entity);
 
 		DummyEntity saved = aggregateTemplate.save(new DummyEntity(null, "Jens"));
 
 		assertThat(reader.findAll()).containsExactly(saved);
 	}
-
-	private  PathToColumnMapping createPathToColumnMapping(AliasFactory aliasFactory) {
-		return new PathToColumnMapping() {
-			@Override
-			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				RelationalPersistentProperty leafProperty = propertyPath.getRequiredLeafProperty();
-				if (leafProperty.isEntity()) {
-					return aliasFactory.getOrCreateAlias(jdbcMappingContext.getRequiredPersistentEntity(leafProperty.getType()));
-				}
-				return aliasFactory.getOrCreateAlias(propertyPath);
-			}
-
-			@Override
-			public String keyColumn(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				throw new UnsupportedOperationException("not supported yet");
-			}
-		};
-	}
-
 
 	@Test
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
@@ -103,15 +85,14 @@ public class SingleSelectIntegrationTests {
 
 		RelationalPersistentEntity<SingleReference> entity = (RelationalPersistentEntity<SingleReference>) jdbcMappingContext
 				.getRequiredPersistentEntity(SingleReference.class);
-		AggregateReader<SingleReference> reader = new AggregateReader<>(jdbcMappingContext, dialect, entity, converter, jdbcTemplate);
+
+		AggregateReader<SingleReference> reader = readerFactory.createAggregateReaderFor(entity);
 
 		SingleReference singleReference = new SingleReference(null, new DummyEntity(null, "Jens"));
 		SingleReference saved = aggregateTemplate.save(singleReference);
 
 		assertThat(reader.findAll()).containsExactly(saved);
 	}
-
-
 
 	@Configuration
 	@Import(TestConfiguration.class)
@@ -132,9 +113,6 @@ public class SingleSelectIntegrationTests {
 	record DummyEntity(@Id Integer id, String name) {
 	}
 
-
-	record SingleReference (
-		@Id Integer id,
-		DummyEntity dummy){
+	record SingleReference(@Id Integer id, DummyEntity dummy) {
 	}
 }
