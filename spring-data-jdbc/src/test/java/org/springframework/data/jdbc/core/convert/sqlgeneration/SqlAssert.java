@@ -282,7 +282,7 @@ public class SqlAssert extends AbstractAssert<SqlAssert, Statement> {
 		@Override
 		public boolean matches(ParsedColumn parsedColumn) {
 
-			String alias = aliasFactory.getAliasFor(property);
+			String alias = aliasFactory.getOrCreateAlias(property);
 			if (parsedColumn.alias.equals(alias) || parsedColumn.column.equals(alias)) {
 				return true;
 			}

@@ -78,7 +78,7 @@ public class SingleSelectIntegrationTests {
 		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
 			@Override
 			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				return aliasFactory.getAliasFor(propertyPath);
+				return aliasFactory.getOrCreateAlias(propertyPath);
 			}
 
 			@Override
@@ -111,7 +111,7 @@ public class SingleSelectIntegrationTests {
 		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
 			@Override
 			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				return aliasFactory.getAliasFor(propertyPath);
+				return aliasFactory.getOrCreateAlias(propertyPath);
 			}
 
 			@Override

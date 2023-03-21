@@ -94,7 +94,7 @@ public class StructureToSelect {
 	}
 
 	private String getAliasFor(Object object) {
-		return aliasFactory.getAliasFor(object);
+		return aliasFactory.getOrCreateAlias(object);
 	}
 
 	// TODO: table is not required when the column is derived
@@ -134,7 +134,7 @@ public class StructureToSelect {
 	}
 
 	private Expression createAliasExpression(AnalyticStructureBuilder.DerivedColumn derivedColumn) {
-		return Expressions.just(aliasFactory.getAliasFor(derivedColumn.column));
+		return Expressions.just(aliasFactory.getOrCreateAlias(derivedColumn.column));
 	}
 
 	private Expression createRownumberExpression(TableLike parentTable,

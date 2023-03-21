@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.relational.core.mapping.PersistentPropertyPathExtension;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
@@ -37,7 +36,10 @@ public class AliasFactory {
 
 	private final List<SingleAliasFactory> factories = Arrays.asList(
 			new DelegatingAliasFactory<>(AnalyticStructureBuilder.TableDefinition.class, td -> td.getTable()),
-			new DefaultAliasFactory<>(AnalyticStructureBuilder.ForeignKey.class, "FK"),
+			new DefaultAliasFactory<>(AnalyticStructureBuilder.ForeignKey.class, "FK", fk -> {
+				PersistentPropertyPathExtension referencedPath = (PersistentPropertyPathExtension) fk.getForeignKeyColumn().getColumn();
+				return referencedPath.getParentPath().getRequiredLeafEntity().getTableName() + "_" + referencedPath.getColumnName();
+			}),
 			new DefaultAliasFactory<>(AnalyticStructureBuilder.AnalyticView.class, "V"),
 			new DefaultAliasFactory<>(AnalyticStructureBuilder.RowNumber.class, "RN"),
 			new DelegatingAliasFactory<>(PersistentPropertyPathExtension.class, pppe -> pppe.getRequiredPersistentPropertyPath()),
@@ -57,7 +59,7 @@ public class AliasFactory {
 			})
 	);
 
-	public String getAliasFor(Object key) {
+	public String getOrCreateAlias(Object key) {
 
 		String cachedAlias = cache.get(key);
 		if (cachedAlias != null) {
@@ -72,7 +74,7 @@ public class AliasFactory {
 					return alias;
 				}
 				if (factory instanceof DelegatingAliasFactory<?> daf) {
-					String alias = getAliasFor(daf.getDelegateKey(key));
+					String alias = getOrCreateAlias(daf.getDelegateKey(key));
 					cache.put(key, alias);
 					return alias;
 				}

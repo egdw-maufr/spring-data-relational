@@ -28,7 +28,6 @@ class CachingResultSet {
 
 	private static final Log log = LogFactory.getLog(CachingResultSet.class);
 
-	public static final String UNSUPPORTED = "CachingResultSet does not implement this method. It is not intended as a full stand in of a ResultSet";
 	private final ResultSet delegate;
 	private Cache cache;
 
@@ -55,7 +54,7 @@ class CachingResultSet {
 
 	@Nullable
 	public Object getObject(String columnLabel)  {
-
+		System.out.println("getting value for " + columnLabel);
 		if (isPeeking()) {
 			return cache.values.get(columnLabel);
 		}

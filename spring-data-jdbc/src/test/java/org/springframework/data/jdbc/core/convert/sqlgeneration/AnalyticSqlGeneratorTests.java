@@ -63,7 +63,7 @@ class AnalyticSqlGeneratorTests {
 								.property("dummy.id") //
 								.property("dummy.aColumn") //
 								.alias("RN0001") //
-								.fk("FK0001")
+								.fk("FK0001_SINGLEREFERENCEID")
 								.greatest()
 								.greatest()
 				).assignsAliasesExactlyOnce() //
