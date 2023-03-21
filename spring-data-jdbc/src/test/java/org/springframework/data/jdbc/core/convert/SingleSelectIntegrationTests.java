@@ -19,6 +19,7 @@ package org.springframework.data.jdbc.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.context.TestExecutionListeners.MergeMode.*;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,17 +76,7 @@ public class SingleSelectIntegrationTests {
 				.getRequiredPersistentEntity(DummyEntity.class);
 		String sql = sqlGenerator.findAll(entity);
 
-		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
-			@Override
-			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				return aliasFactory.getOrCreateAlias(propertyPath);
-			}
-
-			@Override
-			public String keyColumn(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				throw new UnsupportedOperationException("not supported yet");
-			}
-		};
+		PathToColumnMapping pathToColumn = createPathToColumnMapping(aliasFactory);
 		AggregateResultSetExtractor<DummyEntity> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
 				converter, pathToColumn);
 
@@ -94,6 +85,24 @@ public class SingleSelectIntegrationTests {
 		Iterable<DummyEntity> result = jdbcTemplate.query(sql, extractor);
 
 		assertThat(result).containsExactly(saved);
+	}
+
+	private  PathToColumnMapping createPathToColumnMapping(AliasFactory aliasFactory) {
+		return new PathToColumnMapping() {
+			@Override
+			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
+				RelationalPersistentProperty leafProperty = propertyPath.getRequiredLeafProperty();
+				if (leafProperty.isEntity()) {
+					return aliasFactory.getOrCreateAlias(jdbcMappingContext.getRequiredPersistentEntity(leafProperty.getType()));
+				}
+				return aliasFactory.getOrCreateAlias(propertyPath);
+			}
+
+			@Override
+			public String keyColumn(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
+				throw new UnsupportedOperationException("not supported yet");
+			}
+		};
 	}
 
 
@@ -108,17 +117,7 @@ public class SingleSelectIntegrationTests {
 				.getRequiredPersistentEntity(SingleReference.class);
 		String sql = sqlGenerator.findAll(entity);
 
-		PathToColumnMapping pathToColumn = new PathToColumnMapping() {
-			@Override
-			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				return aliasFactory.getOrCreateAlias(propertyPath);
-			}
-
-			@Override
-			public String keyColumn(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
-				throw new UnsupportedOperationException("not supported yet");
-			}
-		};
+		PathToColumnMapping pathToColumn = createPathToColumnMapping(aliasFactory);
 		AggregateResultSetExtractor<SingleReference> extractor = new AggregateResultSetExtractor<>(jdbcMappingContext, entity,
 				converter, pathToColumn);
 

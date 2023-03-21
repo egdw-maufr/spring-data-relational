@@ -94,7 +94,20 @@ public class StructureToSelect {
 	}
 
 	private String getAliasFor(Object object) {
-		return aliasFactory.getOrCreateAlias(object);
+
+		String alias = aliasFactory.getOrCreateAlias(object);
+
+		if (object instanceof AnalyticStructureBuilder.RowNumber rowNumber) {
+			Object firstPartitionBy = rowNumber.getPartitionBy().get(0);
+			if (firstPartitionBy instanceof AnalyticStructureBuilder.ForeignKey foreignKey) {
+				RelationalPersistentEntity table = ((AnalyticStructureBuilder<RelationalPersistentEntity, PersistentPropertyPathExtension>.ForeignKey) foreignKey).getOwner().getTable();
+				aliasFactory.put(table, alias);
+			} else {
+				throw new IllegalStateException("we can only handle foreign keys in this position" + firstPartitionBy);
+			}
+		}
+
+		return alias;
 	}
 
 	// TODO: table is not required when the column is derived

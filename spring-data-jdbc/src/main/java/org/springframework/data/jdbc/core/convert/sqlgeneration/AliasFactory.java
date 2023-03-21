@@ -37,14 +37,17 @@ public class AliasFactory {
 	private final List<SingleAliasFactory> factories = Arrays.asList(
 			new DelegatingAliasFactory<>(AnalyticStructureBuilder.TableDefinition.class, td -> td.getTable()),
 			new DefaultAliasFactory<>(AnalyticStructureBuilder.ForeignKey.class, "FK", fk -> {
-				PersistentPropertyPathExtension referencedPath = (PersistentPropertyPathExtension) fk.getForeignKeyColumn().getColumn();
-				return referencedPath.getParentPath().getRequiredLeafEntity().getTableName() + "_" + referencedPath.getColumnName();
-			}),
-			new DefaultAliasFactory<>(AnalyticStructureBuilder.AnalyticView.class, "V"),
+				PersistentPropertyPathExtension referencedPath = (PersistentPropertyPathExtension) fk.getForeignKeyColumn()
+						.getColumn();
+				return referencedPath.getParentPath().getRequiredLeafEntity().getTableName() + "_"
+						+ referencedPath.getColumnName();
+			}), new DefaultAliasFactory<>(AnalyticStructureBuilder.AnalyticView.class, "V"),
 			new DefaultAliasFactory<>(AnalyticStructureBuilder.RowNumber.class, "RN"),
-			new DelegatingAliasFactory<>(PersistentPropertyPathExtension.class, pppe -> pppe.getRequiredPersistentPropertyPath()),
+			new DelegatingAliasFactory<>(PersistentPropertyPathExtension.class,
+					pppe -> pppe.getRequiredPersistentPropertyPath()),
 			new DelegatingAliasFactory<>(PersistentPropertyPath.class, ppp -> ppp.getRequiredLeafProperty()),
-			new DelegatingAliasFactory<>(AnalyticStructureBuilder.BaseColumn.class, (AnalyticStructureBuilder.BaseColumn bc) -> bc.getColumn()),
+			new DelegatingAliasFactory<>(AnalyticStructureBuilder.BaseColumn.class,
+					(AnalyticStructureBuilder.BaseColumn bc) -> bc.getColumn()),
 			new DefaultAliasFactory<>(RelationalPersistentProperty.class, "C", pp -> pp.getName()),
 			new DefaultAliasFactory<>(RelationalPersistentEntity.class, "T", rpe -> rpe.getTableName().toString()),
 			new DefaultAliasFactory<>(AnalyticStructureBuilder.Greatest.class, "GT", gt -> {
@@ -56,8 +59,7 @@ public class AliasFactory {
 					return "FK";
 				}
 				return "unknown";
-			})
-	);
+			}));
 
 	public String getOrCreateAlias(Object key) {
 
@@ -78,7 +80,8 @@ public class AliasFactory {
 					cache.put(key, alias);
 					return alias;
 				}
-				throw new IllegalStateException("AliasFactory of type %s is not supported".formatted(factory.getClass().toString()));
+				throw new IllegalStateException(
+						"AliasFactory of type %s is not supported".formatted(factory.getClass().toString()));
 			}
 		}
 
@@ -89,6 +92,13 @@ public class AliasFactory {
 
 		String lettersOnly = baseTableName.replaceAll("[^A-Za-z]+", "");
 		return lettersOnly.toUpperCase().substring(0, Math.min(MAX_NAME_HINT_LENGTH, lettersOnly.length()));
+	}
+
+	public void put(Object alternativeKey, String alias) {
+		String oldValue = cache.put(alternativeKey, alias);
+		if (oldValue != null) {
+			System.out.println("Replacing value %s for %s with %s".formatted(oldValue, alternativeKey, alias));
+		}
 	}
 
 	private abstract class SingleAliasFactory<T> {
@@ -148,7 +158,7 @@ public class AliasFactory {
 		}
 
 		private Object getDelegateKey(Object key) {
-			return delegateKey.apply((T)key);
+			return delegateKey.apply((T) key);
 		}
 	}
 }
