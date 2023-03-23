@@ -28,6 +28,7 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.RelationalPersistentProperty;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.util.Assert;
 
 public class AggregateReader<T> {
 	private final RelationalMappingContext mappingContext;
@@ -37,7 +38,8 @@ public class AggregateReader<T> {
 	private final JdbcConverter converter;
 	private final NamedParameterJdbcOperations jdbcTemplate;
 
-	AggregateReader(RelationalMappingContext mappingContext, Dialect dialect, JdbcConverter converter, NamedParameterJdbcOperations jdbcTemplate, RelationalPersistentEntity<T> aggregate) {
+	AggregateReader(RelationalMappingContext mappingContext, Dialect dialect, JdbcConverter converter,
+			NamedParameterJdbcOperations jdbcTemplate, RelationalPersistentEntity<T> aggregate) {
 
 		this.mappingContext = mappingContext;
 
@@ -66,11 +68,19 @@ public class AggregateReader<T> {
 		return new PathToColumnMapping() {
 			@Override
 			public String column(PersistentPropertyPath<RelationalPersistentProperty> propertyPath) {
+				System.out.println("getting column for " + propertyPath);
 				RelationalPersistentProperty leafProperty = propertyPath.getRequiredLeafProperty();
+				Object aliasLookUpKey;
 				if (leafProperty.isEntity()) {
-					return aliasFactory.getOrCreateAlias(mappingContext.getRequiredPersistentEntity(leafProperty.getType()));
+					aliasLookUpKey = mappingContext.getRequiredPersistentEntity(leafProperty.getActualType());
+				} else {
+					aliasLookUpKey = propertyPath;
 				}
-				return aliasFactory.getOrCreateAlias(propertyPath);
+				System.out.println("determined key to use " + aliasLookUpKey);
+				String alias = aliasFactory.getAlias(aliasLookUpKey);
+				System.out.println("obtained alias " + alias);
+				Assert.notNull(alias, "alias must not be null");
+				return alias;
 			}
 
 			@Override

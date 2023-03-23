@@ -173,8 +173,8 @@ public class AggregateResultSetExtractorUnitTests {
 			ResultSet resultSet = ResultSetTestUtil.mockResultSet(
 					asList(column("id1"), column("dummies"), column("dummies.dummyName")), //
 					1, 1, "Dummy Alfred", //
-					1, 1, "Dummy Berta", //
-					1, 1, "Dummy Carl");
+					null, 1, "Dummy Berta", //
+					null, 1, "Dummy Carl");
 
 			Iterable<SimpleEntity> result = extractor.extractData(resultSet);
 

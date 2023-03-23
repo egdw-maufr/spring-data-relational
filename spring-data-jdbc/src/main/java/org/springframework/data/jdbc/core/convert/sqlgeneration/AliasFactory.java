@@ -101,6 +101,10 @@ public class AliasFactory {
 		}
 	}
 
+	public String getAlias(Object key) {
+		return cache.get(key);
+	}
+
 	private abstract class SingleAliasFactory<T> {
 		final Class<T> type;
 

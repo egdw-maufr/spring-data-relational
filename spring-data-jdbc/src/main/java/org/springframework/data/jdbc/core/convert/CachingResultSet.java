@@ -54,11 +54,17 @@ class CachingResultSet {
 
 	@Nullable
 	public Object getObject(String columnLabel)  {
-		System.out.println("getting value for " + columnLabel);
+
+		System.out.print("getting value for " + columnLabel);
+		Object returnValue;
 		if (isPeeking()) {
-			return cache.values.get(columnLabel);
+			returnValue =  cache.values.get(columnLabel);
+		} else {
+			returnValue = saveGetFromDelegate(columnLabel);
 		}
-		return saveGetFromDelegate(columnLabel);
+
+		System.out.println(" returning " + returnValue);
+		return returnValue;
 	}
 
 	@Nullable

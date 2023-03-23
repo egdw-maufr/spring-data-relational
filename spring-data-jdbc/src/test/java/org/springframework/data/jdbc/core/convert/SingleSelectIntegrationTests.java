@@ -44,6 +44,11 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 @ContextConfiguration
 @Transactional
 @TestExecutionListeners(value = AssumeFeatureTestExecutionListener.class, mergeMode = MERGE_WITH_DEFAULTS)
@@ -81,7 +86,7 @@ public class SingleSelectIntegrationTests {
 
 	@Test
 	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
-	void singleCollection() {
+	void singleReference() {
 
 		RelationalPersistentEntity<SingleReference> entity = (RelationalPersistentEntity<SingleReference>) jdbcMappingContext
 				.getRequiredPersistentEntity(SingleReference.class);
@@ -90,6 +95,20 @@ public class SingleSelectIntegrationTests {
 
 		SingleReference singleReference = new SingleReference(null, new DummyEntity(null, "Jens"));
 		SingleReference saved = aggregateTemplate.save(singleReference);
+
+		assertThat(reader.findAll()).containsExactly(saved);
+	}
+	@Test
+	@EnabledOnFeature(TestDatabaseFeatures.Feature.SUPPORTS_SINGLE_SELECT_QUERY)
+	void singleSet() {
+
+		RelationalPersistentEntity<SingleSet> entity = (RelationalPersistentEntity<SingleSet>) jdbcMappingContext
+				.getRequiredPersistentEntity(SingleSet.class);
+
+		AggregateReader<SingleSet> reader = readerFactory.createAggregateReaderFor(entity);
+
+		SingleSet aggregateRoot = new SingleSet(null, new HashSet<>(Arrays.asList(new DummyEntity(null, "Jens"),new DummyEntity(null, "Mark"))));
+		SingleSet saved = aggregateTemplate.save(aggregateRoot);
 
 		assertThat(reader.findAll()).containsExactly(saved);
 	}
@@ -114,5 +133,7 @@ public class SingleSelectIntegrationTests {
 	}
 
 	record SingleReference(@Id Integer id, DummyEntity dummy) {
+	}
+	record SingleSet(@Id Integer id, Set<DummyEntity> dummies) {
 	}
 }
